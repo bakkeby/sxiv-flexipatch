@@ -17,6 +17,7 @@
  */
 
 #include "sxiv.h"
+#include <linux/limits.h>
 #define _MAPPINGS_CONFIG
 #if WINDOW_FIT_IMAGE_PATCH
 #define _WINDOW_CONFIG
@@ -1061,10 +1062,16 @@ int main(int argc, char **argv)
 	fileidx = options->startnum < filecnt ? options->startnum : 0;
 
 	#if START_FROM_FILE_PATCH
-	if (options->startfile != NULL)
-		for (int i = 0; i < filecnt; ++i)
-			if (strcmp(options->startfile, files[i].path) == 0)
+	if (options->startfile != NULL) {
+		char startfile[PATH_MAX];
+		realpath(options->startfile, startfile);
+		for (int i = 0; i < filecnt; ++i) {
+			if (strcmp(startfile, files[i].path) == 0) {
 				fileidx = i;
+				break;
+			}
+		}
+	}
 	#endif // START_FROM_FILE_PATCH
 
 	for (i = 0; i < ARRLEN(buttons); i++) {
